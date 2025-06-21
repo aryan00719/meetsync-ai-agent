@@ -1,0 +1,231 @@
+{
+  "name": "Hackathon project workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "9ee732be-1f4f-4dc9-8ee7-4551f469bdd2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        20,
+        0
+      ],
+      "id": "d8551b22-d802-4b34-8e81-ac1b3110f96c",
+      "name": "Webhook",
+      "webhookId": "9ee732be-1f4f-4dc9-8ee7-4551f469bdd2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2f8cd75c-f39c-4e93-a09d-9fbe29675e99",
+              "name": "transcript",
+              "value": "Alice: Please finish the report by Friday. Bob: I’ll collect the data tomorrow. Carol: I’ll handle the slides.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        0
+      ],
+      "id": "b40c6d74-2097-49d3-9b17-4fe3efd4094f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "You are a meeting assistant. Summarize the following transcript and extract action items per person:\n\n{transcript}\n",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        480,
+        0
+      ],
+      "id": "84f11b88-552e-41c4-84f1-c414ec69e58a",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "mindcraft-gpt4o",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        440,
+        220
+      ],
+      "id": "91cc46b1-9519-40e8-8308-8bbba6749462",
+      "name": "Azure OpenAI Chat Model",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": "MWp5IXnf41d1mioV",
+          "name": "Azure Open AI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8eaf4e52-657f-4127-8ecf-3d76f797ac0f",
+              "name": "=final_output",
+              "value": "$json[\"message\"][\"content\"]",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        840,
+        0
+      ],
+      "id": "c8000720-7f71-44fc-9c28-4d3aae538d53",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "fromEmail": "aryan120504@gmail.com",
+        "toEmail": "aryan120504@gmail.com",
+        "subject": "Meeting Summary and Action Items",
+        "emailFormat": "text",
+        "text": "=$json[\"final_output\"]",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1280,
+        0
+      ],
+      "id": "603ecadb-d8f4-4e28-8d7c-4cc4f423bfb9",
+      "name": "Send Email",
+      "webhookId": "e3fe381d-bb00-4101-8052-2ed2e1d45063",
+      "credentials": {
+        "smtp": {
+          "id": "pYq5K82REsMos37c",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "aryan120504@gmail.com",
+          "mode": "list",
+          "cachedResultName": "aryan120504@gmail.com"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        1060,
+        0
+      ],
+      "id": "18bb877e-4bc5-4032-a458-4dc1e069829c",
+      "name": "Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Hsy8fnAEg2Gmc0QC",
+          "name": "Google Calendar account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Azure OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "24ba66de-0165-4697-a5c0-76a8244dbb65",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "71bd81a41912e231a154633b02b7fe3fadb62321a6631404ba13448d4aa53b1c"
+  },
+  "id": "FyBWlhcc9ayQDOss",
+  "tags": []
+}
